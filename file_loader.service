@@ -1,0 +1,9 @@
+[Unit]
+Description=WebLoaderFile
+
+[Service]
+WorkingDirectory=/root/loader
+ExecStart=/root/loader/venv/bin/python loader.py
+
+[Install]
+WantedBy=multi-user.target
