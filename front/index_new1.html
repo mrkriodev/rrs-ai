@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RRS-AI Web Page</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .table-bordered {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .table-bordered th, .table-bordered td {
+            border: 1px solid black;
+            text-align: left;
+            padding: 8px;
+        }
+        .table-bordered th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold my-4">RRS-AI.</h1>
+        <h2 class="text-xl my-2">With Департамент Строительства г. Москва</h2>
+    </div>
+    <div class="container mx-auto px-4">
+        <!-- Upload Form -->
+        <form id="uploadForm" class="mb-6">
+            <div class="flex space-x-2">
+                <!-- <label for="fileInput" class="flex-1">Выберите файл</label> -->
+                <input type="file" id="fileInput" class="flex-1 border-2 border-black px-2">
+                <button type="submit" class="border-2 border-black px-4">Upload Video</button>
+            </div>
+        </form>
+        <form id="uploadForm" class="mb-6">
+            <div class="flex space-x-2">
+                <!-- <label for="fileInput" class="flex-1">Выберите файл</label> -->
+                <input type="file" id="fileInput" class="flex-1 border-2 border-black px-2">
+                <button type="submit" class="border-2 border-black px-4">Upload Video</button>
+            </div>
+        </form>
+        <form id="uploadForm" class="mb-6">
+            <div class="flex space-x-2">
+                <!-- <label for="fileInput" class="flex-1">Выберите файл</label> -->
+                <input type="file" id="fileInput" class="flex-1 border-2 border-black px-2">
+                <button type="submit" class="border-2 border-black px-4">Upload Video</button>
+            </div>
+        </form>
+
+        <!-- Status Window -->
+        <div id="statusWindow" class="mb-6" style="display:none;">
+            <p>Quality: <span id="quality"></span></p>
+            <p>Content Type: <span id="contentType"></span></p>
+            <p>Length: <span id="length"></span></p>
+        </div>
+
+        <!-- Table for Displaying Video Information -->
+        <table class="table-bordered">
+            <thead>
+                <tr>
+                    <th>Video ID</th>
+                    <th>Класс</th>
+                    <th>Вероятность</th>
+                    <th>FCCC-code</th>
+                </tr>
+            </thead>
+            <tbody id="videoInfo">
+            <!-- Rows for displaying data will be dynamically inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
