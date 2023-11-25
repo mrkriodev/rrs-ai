@@ -3,11 +3,12 @@ import uuid
 import aiofiles
 import uvicorn
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import SQLAlchemyError
 from driver import get_async_session, Files
 from fastapi import FastAPI, UploadFile, File, Depends, HTTPException
 import paho.mqtt.publish as publish
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -31,14 +32,17 @@ async def post_endpoint(video: UploadFile = File(...), session: AsyncSession = D
 
     message = str({"id": id_file, "file_path": uid_file})
 
-    publish.single(topic='/detect/input', payload=el, hostname='127.0.0.1')
+    publish.single(topic='/detect/input', payload=message, hostname='127.0.0.1')
 
     return {"id": id_file}
 
 
+class D(BaseModel):
+   video_id: int
+
 @app.post("/api/get_video_status")
-async def get_video_status(video_id: int, session: AsyncSession = Depends(get_async_session)):
-    file_record = await session.execute(select(Files).filter(Files.id == video_id))
+async def get_video_status(video_id: D, session: AsyncSession = Depends(get_async_session)):
+    file_record = await session.execute(select(Files).filter(Files.id == video_id.video_id))
     file = file_record.scalar_one_or_none()
     if file:
         status = file.status  # Example status
@@ -46,10 +50,12 @@ async def get_video_status(video_id: int, session: AsyncSession = Depends(get_as
     else:
         raise HTTPException(status_code=404, detail="File not found")
     
+class B(BaseModel):
+   video_id: int
 
 @app.post("/api/video_params")
-async def video_params(video_id: int, session: AsyncSession = Depends(get_async_session)):
-    file_record = await session.execute(select(Files).filter(Files.id == video_id))
+async def video_params(video_id: B, session: AsyncSession = Depends(get_async_session)):
+    file_record = await session.execute(select(Files).filter(Files.id == video_id.video_id))
     file = file_record.scalar_one_or_none()
     if file:
         # Here you'd implement your logic to retrieve video params
@@ -60,6 +66,41 @@ async def video_params(video_id: int, session: AsyncSession = Depends(get_async_
         }
     else:
         raise HTTPException(status_code=404, detail="File not found")
+
+
+class VideoUpdateRequest(BaseModel):
+    video_id: str
+    status: int 
+    class_pred: str
+    special_code: str
+    probability: str
+
+@app.post("/api/update_video")
+async def update_video(update_data: VideoUpdateRequest, session: AsyncSession = Depends(get_async_session)):
+    try:
+        print(update_data.dict())
+        # Fetch the video record to update
+        result = await session.execute(select(Files).filter(Files.id == update_data.video_id))
+        video_record = result.scalar_one_or_none()
+
+        if video_record is None:
+            raise HTTPException(status_code=404, detail="Video not found")
+
+        # Update the video record with new data
+        await session.execute(
+            update(Files).where(Files.id == update_data.video_id).values(
+                status = update_data.status,
+                class_pred=update_data.class_pred,
+                special_code=update_data.special_code,
+                probability=update_data.probability
+            )
+        )
+        await session.commit()
+
+        return {"message": "Video updated successfully"}
+    except SQLAlchemyError as e:
+        await session.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 if __name__ == '__main__':

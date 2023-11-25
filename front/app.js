@@ -12,9 +12,22 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
     .then(data => {
         const videoId = data.id;
         checkVideoStatus(videoId);
+        addVideoRow(videoId);
     })
     .catch(error => console.error('Error:', error));
 });
+
+function addVideoRow(videoId) {
+    const tableBody = document.getElementById('videoInfo');
+    const row = tableBody.insertRow();
+    row.id = `video-${videoId}`;
+    row.innerHTML = `
+        <td>${videoId}</td>
+        <td id="class-${videoId}">Pending</td>
+        <td id="probability-${videoId}">Pending</td>
+        <td id="fccCode-${videoId}">Pending</td>
+    `;
+}
 
 function checkVideoStatus(videoId) {
     fetch('/api/get_video_status', {
@@ -26,7 +39,7 @@ function checkVideoStatus(videoId) {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.status === 'done') {
+        if (data.status === '2') {
             getVideoParams(videoId);
         } else {
             setTimeout(() => checkVideoStatus(videoId), 5000); // Check again after 5 seconds
@@ -45,10 +58,9 @@ function getVideoParams(videoId) {
     })
     .then(response => response.json())
     .then(data => {
-        document.getElementById('quality').textContent = data.quality;
-        document.getElementById('contentType').textContent = data.content_type;
-        document.getElementById('length').textContent = data.length;
-        document.getElementById('statusWindow').style.display = 'block';
+        document.getElementById(`class-${videoId}`).textContent = data.class_pred;
+        document.getElementById(`probability-${videoId}`).textContent = data.probability;
+        document.getElementById(`fccCode-${videoId}`).textContent = data.special_code;
     })
     .catch(error => console.error('Error:', error));
 }
